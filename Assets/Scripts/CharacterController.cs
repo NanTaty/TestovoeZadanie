@@ -31,52 +31,45 @@ public class CharacterController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && !isActive)
         {
-            if (isActive)
-            {
-                return;
-            }
             IsoRaycastHit hit;
             Ray ray = IsoWorld.instance.RayFromIsoCameraToIsoPoint(IsoWorld.instance.MouseIsoPosition(Camera.main));
             if (IsoPhysics.Raycast(ray, out hit))
             {
-                if (hit.collider != null)
+                if (hit.collider.GetComponent<PickableObject>() != null)
                 {
-                    if (hit.collider.GetComponent<PickableObject>() != null)
+                    _gridPosition = LevelGrid.Instance.GetGridPosition(playerIsoObject.tilePosition);
+                    _pickableObject = hit.collider.GetComponent<PickableObject>();
+
+                    List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(_gridPosition,
+                        _pickableObject.GetPickableObjectGridPosition());
+
+                    if (pathGridPositionList == null)
                     {
-                        _gridPosition = LevelGrid.Instance.GetGridPosition(playerIsoObject.tilePosition);
-                        _pickableObject = hit.collider.GetComponent<PickableObject>();
-
-                        List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(_gridPosition,
-                            _pickableObject.GetPickableObjectGridPosition());
-
-                        if (pathGridPositionList == null)
-                        {
-                            return;
-                        }
-                        
-                        currentPositionIndex = 0;
-                        positionList = new List<Vector3>();
-                        List<PickableObject> pickableObjects = new List<PickableObject>();
-                        int objectCount = 0;
-                        foreach (GridPosition pathGridPosition in pathGridPositionList)
-                        {
-                            if (LevelGrid.Instance.HasAnyObjectAtGridPosition(pathGridPosition))
-                            {
-                                pickableObjects.Add(LevelGrid.Instance.GetObjectAtGridPosition(pathGridPosition));
-                                objectCount++;
-                                if (objectCount > 1)
-                                {
-                                    pickableObjects[0].TriggerGlow();
-                                    return;
-                                }
-                            }
-                            positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPosition));
-                        }
-
-                        isActive = true;
+                        return;
                     }
+                        
+                    currentPositionIndex = 0;
+                    positionList = new List<Vector3>();
+                    List<PickableObject> pickableObjectsOnWay = new List<PickableObject>();
+                    int objectCount = 0;
+                    foreach (GridPosition pathGridPosition in pathGridPositionList)
+                    {
+                        if (LevelGrid.Instance.HasAnyObjectAtGridPosition(pathGridPosition))
+                        {
+                            pickableObjectsOnWay.Add(LevelGrid.Instance.GetObjectAtGridPosition(pathGridPosition));
+                            objectCount++;
+                            if (objectCount > 1)
+                            {
+                                pickableObjectsOnWay[0].TriggerGlow();
+                                return;
+                            }
+                        }
+                        positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPosition));
+                    }
+
+                    isActive = true;
                 }
             }
         }
