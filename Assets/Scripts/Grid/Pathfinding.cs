@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using IsoTools;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class Pathfinding : MonoBehaviour
 {
@@ -17,6 +18,8 @@ public class Pathfinding : MonoBehaviour
     private int height;
     private float cellSize;
     private GridSystem<PathGrid> gridSystem;
+
+    [SerializeField] private Tilemap tileMap;
 
     private void Awake()
     {
@@ -88,7 +91,7 @@ public class Pathfinding : MonoBehaviour
                     continue;
                 }
 
-                if (!neighbourNode.IsWalkable())
+                if (!DoesHaveTile(neighbourNode))
                 {
                     closedList.Add(neighbourNode);
                     continue;
@@ -114,6 +117,18 @@ public class Pathfinding : MonoBehaviour
         
         //No path found
         return null;
+    }
+
+    private bool DoesHaveTile(PathGrid pathGrid)
+    {
+        GridPosition pathGridPosition = pathGrid.GetGridPosition();
+        Vector3Int tilePos = new Vector3Int(pathGridPosition.x, pathGridPosition.y);
+        if (tileMap.HasTile(tilePos))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public int CalculateDistance(GridPosition gridPositionA, GridPosition gridPositionB)

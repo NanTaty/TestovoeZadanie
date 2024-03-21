@@ -12,7 +12,7 @@ public class CharacterController : MonoBehaviour
     private int currentPositionIndex;
     
     [SerializeField] private float moveSpeed;
-    
+
     private List<Vector3> positionList;
 
     private IsoObject playerIsoObject;
@@ -47,7 +47,7 @@ public class CharacterController : MonoBehaviour
                     {
                         _gridPosition = LevelGrid.Instance.GetGridPosition(playerIsoObject.tilePosition);
                         _pickableObject = hit.collider.GetComponent<PickableObject>();
-                        
+
                         List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(_gridPosition,
                             _pickableObject.GetPickableObjectGridPosition());
 

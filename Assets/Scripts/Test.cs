@@ -6,26 +6,41 @@ using IsoTools.Examples.Kenney;
 using IsoTools.Internal;
 using IsoTools.Physics;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class Test : MonoBehaviour
 {
-    private GridPosition _gridPosition;
-    [SerializeField] private int x, y;
+    private Tilemap _tilemap;
 
     private void Awake()
     {
+        _tilemap = GetComponent<Tilemap>();
     }
 
-    private void Start()
+    void Start()
     {
-        _gridPosition = new GridPosition(x, y);
+        CheckTilePositions();
     }
 
-    private void Update()
+    void CheckTilePositions()
     {
-        if (Input.GetKeyDown(KeyCode.A))
+        BoundsInt bounds = _tilemap.cellBounds;
+        TileBase[] allTiles = _tilemap.GetTilesBlock(bounds);
+
+        for (int x = bounds.xMin; x < bounds.xMax; x++)
         {
-            Debug.Log(LevelGrid.Instance.HasAnyObjectAtGridPosition(_gridPosition) + ": " + _gridPosition);
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                Vector3Int cellPos = new Vector3Int(x, y, bounds.z);
+                TileBase tile = allTiles[(x - bounds.xMin) + (y - bounds.yMin) * bounds.size.x];
+
+                if (tile != null)
+                {
+                    Vector3 worldPos = _tilemap.CellToWorld(cellPos);
+                    Debug.Log("Tile at position (" + x + ", " + y + ") has world position: " + worldPos);
+                    Debug.Log("Tile vector int pos: " + cellPos);
+                }
+            }
         }
     }
 }
